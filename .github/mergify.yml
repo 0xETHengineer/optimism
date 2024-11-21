@@ -1,42 +1,38 @@
 queue_rules:
   - name: default
-    conditions: []
+    queue_conditions:
+      - and:
+          - "#review-threads-unresolved=0"
+          - "#approved-reviews-by>=1"
+          - "#changes-requested-reviews-by=0"
+          - "label!=do-not-merge"
+          - "label!=multiple-reviewers"
+          - "label!=mergify-ignore"
+          - "base=develop"
+          - or:
+              - and:
+                  - "label!=SR-Risk"
+                  - "label!=C-Protocol-Critical"
+              - and:
+                  - "label=SR-Risk"
+                  - "approved-reviews-by=maurelian"
+              - and:
+                  - "label=C-Protocol-Critical"
+                  - or:
+                      - "approved-reviews-by=tynes"
+                      - "approved-reviews-by=smartcontracts"
+    merge_conditions: []
+    merge_method: merge
+    merge_bot_account: OptimismBot
 
 pull_request_rules:
-  - name: Automatic merge on approval
-    conditions:
-      - and:
-        - "#review-threads-unresolved=0"
-        - "#approved-reviews-by>=1"
-        - "#changes-requested-reviews-by=0"
-        - "label!=do-not-merge"
-        - "label!=multiple-reviewers"
-        - "label!=mergify-ignore"
-        - "base=develop"
-        - or:
-          - and:
-            - "label!=SR-Risk"
-            - "label!=C-Protocol-Critical"
-          - and:
-            - "label=SR-Risk"
-            - "approved-reviews-by=maurelian"
-          - and:
-            - "label=C-Protocol-Critical"
-            - or:
-              - "approved-reviews-by=tynes"
-              - "approved-reviews-by=smartcontracts"
-    actions:
-      queue:
-        name: default
-        method: merge
-        merge_bot_account: OptimismBot
   - name: Add merge train label
     conditions:
       - "queue-position >= 0"
     actions:
       comment:
-          message: |
-            This PR has been added to the merge queue, and will be merged soon.
+        message: |
+          This PR has been added to the merge queue, and will be merged soon.
       label:
         add:
           - on-merge-train
@@ -74,7 +70,8 @@ pull_request_rules:
       - conflict
     actions:
       comment:
-        message: Hey @{{author}}! This PR has merge conflicts. Please fix them before continuing review.
+        message: Hey @{{author}}! This PR has merge conflicts. Please fix them before
+          continuing review.
       label:
         add:
           - conflict
@@ -135,3 +132,7 @@ pull_request_rules:
       request_reviews:
         users:
           - roninjin10
+  - name: refactored queue action rule
+    conditions: []
+    actions:
+      queue:
